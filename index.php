@@ -10,6 +10,10 @@ $remoteIP = $_SERVER['REMOTE_ADDR'];
 	
 if( strpos(file_get_contents("honeypot/disallow.txt"),$remoteIP) !== false) {
 	//echo "You're now in the honey pot you bad bot you.";
+	ob_clean();
+	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+	header("Cache-Control: post-check=0, pre-check=0", false);
+	header("Pragma: no-cache");
 	include "honeypot/hp.php";
 	exit;
 }	
@@ -54,6 +58,9 @@ if( file_exists( realpath($fullPath) ) ){
 //echo $path;
 
 /*Home Page*/
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 
 echo "Hello World";
 echo '<p><a href="/other">Some other page</a></p>';

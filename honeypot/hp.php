@@ -24,9 +24,9 @@
 //Basic Options
 $random_content_length = 2048; //In characters. Used to fill up the size of the scanner's log files.
 $defense_number = 5; //1 is Blinding Mode, 2 is Ninja Mode, 3 is HTTP Tarpit, 4 is a Chained Redirection, 5 is a Random defense for each request, 6 is a Random Defense by the minute.
-$responce_delay_min = 100; //Range of delay in microseconds before headers are sent. You want a range of delays so the introduced latentcy can not be detected by the scanner.
-$responce_dalay_max = 2000;
-$times_redirected_max = 0; //Maximum number of times to redirect (0-9).
+$responce_delay_min = 1000000; //Range of delay in microseconds before headers are sent. You want a range of delays so the introduced latentcy can not be detected by the scanner.
+$responce_dalay_max = 5000000;
+$times_redirected_max = 9; //Maximum number of times to redirect (0-9).
 $debug = false; //Echo messages for testing the script.
 
 function rand_content() {
@@ -105,7 +105,7 @@ if( !empty($_SERVER['REQUEST_URI']) ) {
 //Randomize defense
 if (5 == $defense_number) {
 	//Weight random selection to use the Tarpit more often
-	$number_sample = array(1, 2, 3, 3, 3, 3, 4);
+	$number_sample = array(1, 2, 3, 4);
 	$defense_number = $number_sample[ array_rand( $number_sample ) ];
 } elseif (6 == $defense_number) {
 	//Randomize defense based on the current minute. This makes the random return of the server harder to identify.
@@ -136,14 +136,15 @@ switch ($defense_number) {
 	//Slows down bot scanners.
 	case 3:
 		$rand_num = mt_rand(0, 3);
-		if (3 == $rand_num) {
+		//if (3 == $rand_num) {
 			//Ask for unneccessary authentication.
+			ob_clean();
 			header("HTTP/1.1 401 Not Authorized");
 			header('WWW-Authenticate: realm="My Realm"');
 			echo 'HTTP/1.1 401 Not Authorized'."\n";
 			rand_content();
 			break;
-		}
+		//}
 		//Reply with random keep conection open status code.
 		if (!$debug) {
 			header("HTTP/1.1 10$rand_num"); 
@@ -161,6 +162,7 @@ switch ($defense_number) {
 			$times_redirected = 0;
 		$times_redirected++;
 		//Random redirect status
+		ob_clean();
 		$redirect_statuses = array('301 Moved Permanently', 
 								'302 Found', 
 								'307 Temporary Redirect'
@@ -172,5 +174,7 @@ switch ($defense_number) {
 		break;
 		
 }
-
+if ($debug) {
+	echo $defense_number;
+}
 die(); //Stop kill php process to reduce resource overhead
